@@ -28,7 +28,8 @@ if __name__ == "__main__":
             pid = int(input("Digite o ID do processo: "))
             size = int(input("Digite o tamanho do processo: "))
             process = Process(name, pid, size)
-            memory_manager.allocate_process(process)
+            if not memory_manager.allocate_process(process):
+                break
         elif choice == "2":
             pid = int(input("Digite o ID do processo a ser removido: "))
             memory_manager.deallocate_process(pid)

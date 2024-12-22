@@ -1,5 +1,5 @@
 from MemoryPartition import MemoryPartition
-
+import random
 class MemoryManager:
     def __init__(self, total_memory, partition_sizes, allocation_algorithm="first-fit"):
             self.total_memory = total_memory
@@ -69,14 +69,15 @@ class MemoryManager:
         return False
 
     def swap_out_process(self):
-        for partition in self.partitions:
-            if not partition.is_free():
-                process = partition.process
-                partition.process = None
-                self.swapped_out_processes.append(process)
-                process.stop()
-                print(f"Processo {process.name} (PID: {process.pid}) swapped out para a memória secundária.")
-                return True
+        allocated_partitions = [partition for partition in self.partitions if not partition.is_free()]
+        if allocated_partitions:
+            partition = random.choice(allocated_partitions)
+            process = partition.process
+            partition.process = None
+            self.swapped_out_processes.append(process)
+            process.stop()
+            print(f"Process {process.name} (PID: {process.pid}) swapped out to secondary memory.")
+            return True
         return False
 
     def swap_in_process(self, pid):
@@ -87,15 +88,19 @@ class MemoryManager:
                     print(f"Processo {process.name} (PID: {pid}) swapped de volta para a memória.")
                 return
         print(f"Não foi encontrado um processo de ID {pid} na memória secundária.")
-
+            
     def display_memory_state(self):
-        print("\nAtual estado da memória:")
+        print("\nEstado Atual da Memória:")
+        total_fragmentation = 0
         for i, partition in enumerate(self.partitions):
             if partition.is_free():
                 print(f"Partição {i+1}: Tamanho {partition.size}, Livre")
+                total_fragmentation += partition.size
             else:
                 p = partition.process
                 print(f"Partição {i+1}: Tamanho {partition.size}, Ocupada pelo processo {p.name} (PID: {p.pid}, Tamanho: {p.size})")
+        print(f"\nFragmentação Total(Externa): {total_fragmentation}")
+
         print("\nProcessos Swapped Out:")
         if self.swapped_out_processes:
             for process in self.swapped_out_processes:
