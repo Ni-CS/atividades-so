@@ -14,18 +14,24 @@ class MemoryManager:
         self.page_replacement_queue = []
 
     def allocate_process(self, process):
-        num_pages = -(-process.size // self.page_size)  # Calculate number of pages (ceil)
-        if num_pages > self.num_virtual_pages:
-            print(f"Processo {process.name} (PID: {process.pid}) ultrapassa o tamanho da memória virtual e não pode ser alocado.")
-            return False
+            num_pages = -(-process.size // self.page_size)  # Calculate number of pages (ceil)
+            if num_pages > self.num_virtual_pages:
+                print(f"Processo {process.name} (PID: {process.pid}) ultrapassa o tamanho da memória virtual e não pode ser alocado.")
+                return False
 
-        process.pages = [Page(process.pid, i) for i in range(num_pages)]
-        for page in process.pages:
-            self.virtual_memory[process.pages.index(page)] = page
+            process.pages = [Page(process.pid, i) for i in range(num_pages)]
+            allocated_pages = 0
+            for page in process.pages:
+                if allocated_pages < self.num_virtual_pages:
+                    self.virtual_memory[allocated_pages] = page
+                    allocated_pages += 1
+                else:
+                    print(f"Memória virtual insuficiente para o processo {process.name} (PID: {process.pid}).")
+                    return False
 
-        print(f"Processo {process.name} (PID: {process.pid}) alocado com {num_pages} páginas.")
-        self.processes.append(process)
-        return True
+            print(f"Processo {process.name} (PID: {process.pid}) alocado com {num_pages} páginas.")
+            self.processes.append(process)
+            return True
 
     def access_page(self, process_id, page_number):
         page = next((p for p in self.virtual_memory if p and p.process_id == process_id and p.page_number == page_number), None)
@@ -69,3 +75,11 @@ class MemoryManager:
                 print(f"Slot {i}: Livre")
 
         print(f"\nFalhas de páginas: {self.page_faults}")
+        
+    def calculate_internal_fragmentation(self):
+        fragmentation = 0
+        for process in self.processes:
+            total_pages = len(process.pages)
+            last_page_size = process.size % self.page_size or self.page_size
+            fragmentation += (self.page_size - last_page_size) if total_pages > 0 else 0
+        print(f"\nFragmentação Interna Total: {fragmentation} MB")

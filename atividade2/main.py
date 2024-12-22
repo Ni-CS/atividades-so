@@ -23,7 +23,8 @@ if __name__ == "__main__":
         print("1. Adicionar um processo")
         print("2. Acessar uma página")
         print("3. Exibir o estado da memória")
-        print("4. Sair")
+        print("4. Calcular fragmentação interna")
+        print("5. Sair")
 
         choice = input("Digite a operação desejada: ")
 
@@ -43,6 +44,9 @@ if __name__ == "__main__":
             manager.display_memory_state()
 
         elif choice == "4":
+            manager.calculate_internal_fragmentation()
+
+        elif choice == "5":
             print("Encerrando programa.")
             break
 
